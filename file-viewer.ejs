@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>عرض الملف: <%= fileName %> - <%= serverName %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0e1525;
+            --secondary-bg: #1c2333;
+            --tertiary-bg: #252b3b;
+            --accent-color: #3a57a4;
+            --accent-hover: #4a67b4;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --border-color: #313244;
+            --success-color: #4fd69c;
+            --error-color: #f16a6a;
+            --warning-color: #ffcc5c;
+            --info-color: #54c7ec;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: var(--secondary-bg);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .header-title i {
+            color: var(--accent-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--tertiary-bg);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 12px rgba(58, 87, 164, 0.3);
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+            border-color: #d35f5f;
+        }
+
+        .btn-danger:hover {
+            background: #e05b5b;
+            border-color: #c55757;
+        }
+
+        .container {
+            flex: 1;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .file-info {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--border-color);
+        }
+
+        .file-path {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .file-path span {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .file-path span:hover {
+            color: var(--accent-color);
+        }
+
+        .file-editor {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .editor-header {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .file-type {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-color);
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .file-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .file-details .file-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-editor {
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            padding: 1rem;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            border: none;
+            resize: none;
+            font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            outline: none;
+            direction: ltr;
+            white-space: pre;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            counter-reset: line;
+            padding-left: 60px;
+        }
+
+        .text-editor::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            background: var(--secondary-bg);
+            border-right: 1px solid var(--border-color);
+        }
+
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            overflow: hidden;
+            background: var(--secondary-bg);
+            color: var(--text-secondary);
+            text-align: right;
+            padding: 1rem 0.5rem;
+            font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            user-select: none;
+        }
+
+        .line-numbers span {
+            counter-increment: line;
+            display: block;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .line-numbers span::before {
+            content: counter(line);
+            padding-right: 0.5rem;
+        }
+
+        /* Code Syntax Highlighting */
+        .code-keyword { color: #ff79c6; }
+        .code-string { color: #f1fa8c; }
+        .code-comment { color: #6272a4; }
+        .code-number { color: #bd93f9; }
+        .code-function { color: #50fa7b; }
+        .code-operator { color: #ff79c6; }
+        .code-variable { color: #f8f8f2; }
+
+        .image-viewer, .media-viewer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: #0a0f18;
+            min-height: 400px;
+        }
+
+        .image-viewer img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .media-viewer video, .media-viewer audio {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .editor-footer {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .editor-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-status i {
+            font-size: 0.8rem;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .toast {
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--tertiary-bg);
+            color: var(--text-primary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            animation: slideIn 0.3s ease, fadeOut 0.3s ease 3s forwards;
+        }
+
+        .toast.success { border-left: 4px solid var(--success-color); }
+        .toast.error { border-left: 4px solid var(--error-color); }
+        .toast.warning { border-left: 4px solid var(--warning-color); }
+        .toast.info { border-left: 4px solid var(--info-color); }
+
+        .toast i {
+            font-size: 1.2rem;
+        }
+
+        .toast.success i { color: var(--success-color); }
+        .toast.error i { color: var(--error-color); }
+        .toast.warning i { color: var(--warning-color); }
+        .toast.info i { color: var(--info-color); }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .rename-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .rename-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .rename-modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--primary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(58, 87, 164, 0.2);
+            outline: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 0.8rem;
+            }
+
+            .file-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .file-path {
+                overflow-x: auto;
+                max-width: 100%;
+                padding-bottom: 0.5rem;
+            }
+
+            .editor-header, .editor-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.8rem;
+            }
+
+            .editor-actions, .editor-footer-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .btn {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="rename-modal" id="renameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-edit" style="color: var(--accent-color);"></i>
+                <h2 class="modal-title">إعادة تسمية الملف</h2>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newFileName" class="form-label">الاسم الجديد للملف</label>
+                    <input type="text" id="newFileName" class="form-control" value="<%= fileName %>">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeRenameModal()">إلغاء</button>
+                <button class="btn btn-primary" onclick="renameFile()">إعادة تسمية</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-title">
+            <i class="fas fa-file-code"></i>
+            <span>عرض الملف: <%= fileName %></span>
+        </div>
+        <div class="header-actions">
+            <a href="/edit-server/<%= serverName %><%= filePath ? '?path=' + encodeURIComponent(filePath) : '' %>" class="btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>العودة</span>
+            </a>
+            <% if (userPermissions.canEdit) { %>
+            <button class="btn" onclick="openRenameModal()">
+                <i class="fas fa-edit"></i>
+                <span>إعادة تسمية</span>
+            </button>
+            <% } %>
+            <% if (userPermissions.canDelete) { %>
+            <button class="btn btn-danger" onclick="deleteFile()">
+                <i class="fas fa-trash"></i>
+                <span>حذف</span>
+            </button>
+            <% } %>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="file-info">
+            <div class="file-path">
+                <i class="fas fa-folder"></i>
+                <a href="/edit-server/<%= serverName %>" style="color: var(--text-secondary); text-decoration: none;">
+                    <span>الرئيسية</span>
+                </a>
+                <% if (filePath) { %>
+                    <% const parts = filePath.split('/'); %>
+                    <% let currentPath = ''; %>
+                    <% for (let i = 0; i < parts.length; i++) { %>
+                        <% currentPath += (i > 0 ? '/' : '') + parts[i]; %>
+                        <span>/</span>
+                        <a href="/edit-server/<%= serverName %>?path=<%= encodeURIComponent(currentPath) %>" style="color: var(--text-secondary); text-decoration: none;">
+                            <span><%= parts[i] %></span>
+                        </a>
+                    <% } %>
+                <% } %>
+                <span>/</span>
+                <span style="color: var(--text-primary);"><%= fileName %></span>
+            </div>
+            <a href="/download-file/<%= serverName %>/<%= encodeURIComponent(filePath ? filePath + '/' + fileName : fileName) %>" class="btn">
+                <i class="fas fa-download"></i>
+                <span>تنزيل الملف</span>
+            </a>
+        </div>
+
+        <div class="file-editor">
+            <div class="editor-header">
+                <div class="file-type">
+                    <div class="file-icon">
+                        <% if (fileType === 'image') { %>
+                            <i class="fas fa-image"></i>
+                        <% } else if (fileType === 'video') { %>
+                            <i class="fas fa-video"></i>
+                        <% } else if (fileType === 'audio') { %>
+                            <i class="fas fa-music"></i>
+                        <% } else { %>
+                            <i class="fas fa-code"></i>
+                        <% } %>
+                    </div>
+                    <div class="file-details">
+                        <h3><%= fileName %></h3>
+                        <div class="file-meta">
+                            <% if (fileExtension) { %>
+                                <span>النوع: <%= fileExtension.substring(1) %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+                <% if (fileType === 'text') { %>
+                <div class="editor-actions">
+                    <button class="btn" onclick="copyContent()">
+                        <i class="fas fa-copy"></i>
+                        <span>نسخ</span>
+                    </button>
+                </div>
+                <% } %>
+            </div>
+
+            <div class="editor-content">
+                <% if (fileType === 'text') { %>
+                    <div class="editor-wrapper" style="position: relative;">
+                        <div class="line-numbers">
+                            <% for(let i = 1; i <= content.split('\n').length; i++) { %>
+                                <span></span>
+                            <% } %>
+                        </div>
+                        <textarea id="fileContent" class="text-editor" <%= userPermissions.canEdit ? '' : 'readonly' %>><%= content %></textarea>
+                    </div>
+                <% } else if (fileType === 'image') { %>
+                    <div class="image-viewer">
+                        <img src="/download-file/<%= serverName %>/<%= encodeURIComponent(filePath ? filePath + '/' + fileName : fileName) %>" alt="<%= fileName %>">
+                    </div>
+                <% } else if (fileType === 'video') { %>
+                    <div class="media-viewer">
+                        <video controls>
+                            <source src="/download-file/<%= serverName %>/<%= encodeURIComponent(filePath ? filePath + '/' + fileName : fileName) %>" type="video/<%= fileExtension.substring(1) %>">
+                            المتصفح لا يدعم هذا النوع من الفيديو
+                        </video>
+                    </div>
+                <% } else if (fileType === 'audio') { %>
+                    <div class="media-viewer">
+                        <audio controls>
+                            <source src="/download-file/<%= serverName %>/<%= encodeURIComponent(filePath ? filePath + '/' + fileName : fileName) %>" type="audio/<%= fileExtension.substring(1) %>">
+                            المتصفح لا يدعم هذا النوع من الملفات الصوتية
+                        </audio>
+                    </div>
+                <% } else { %>
+                    <textarea id="fileContent" class="text-editor" <%= userPermissions.canEdit ? '' : 'readonly' %>><%= content %></textarea>
+                <% } %>
+            </div>
+
+            <% if (fileType === 'text' && userPermissions.canEdit) { %>
+            <div class="editor-footer">
+                <div class="editor-status">
+                    <i class="fas fa-circle" id="editorStatus" style="color: var(--success-color);"></i>
+                    <span id="statusText">جاهز</span>
+                </div>
+                <div class="editor-footer-actions">
+                    <button class="btn btn-primary" onclick="saveFile()">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ التغييرات</span>
+                    </button>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        // إظهار التوست (رسالة)
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'times-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+
+            toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // نسخ المحتوى
+        function copyContent() {
+            const fileContent = document.getElementById('fileContent');
+            if (fileContent) {
+                fileContent.select();
+                document.execCommand('copy');
+                showToast('تم نسخ المحتوى بنجاح', 'success');
+            }
+        }
+
+        // حفظ الملف
+        function saveFile() {
+            const content = document.getElementById('fileContent').value;
+            const fileName = '<%= fileName %>';
+            const filePath = '<%= filePath %>';
+            const serverName = '<%= serverName %>';
+            const fullPath = filePath ? `${filePath}/${fileName}` : fileName;
+
+            // تغيير حالة التحرير
+            document.getElementById('editorStatus').style.color = 'var(--warning-color)';
+            document.getElementById('statusText').innerText = 'جاري الحفظ...';
+
+            fetch(`/api/save-file/${serverName}/${encodeURIComponent(fullPath)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ content })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('editorStatus').style.color = 'var(--success-color)';
+                    document.getElementById('statusText').innerText = 'تم الحفظ';
+                    showToast('تم حفظ الملف بنجاح', 'success');
+                } else {
+                    document.getElementById('editorStatus').style.color = 'var(--error-color)';
+                    document.getElementById('statusText').innerText = 'فشل الحفظ';
+                    showToast(`فشل في حفظ الملف: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                document.getElementById('editorStatus').style.color = 'var(--error-color)';
+                document.getElementById('statusText').innerText = 'خطأ';
+                showToast(`خطأ: ${error.message}`, 'error');
+            });
+        }
+
+        // حذف الملف
+        function deleteFile() {
+            if (!confirm('هل أنت متأكد من حذف هذا الملف؟')) {
+                return;
+            }
+
+            const fileName = '<%= fileName %>';
+            const filePath = '<%= filePath %>';
+            const serverName = '<%= serverName %>';
+            const fullPath = filePath ? `${filePath}/${fileName}` : fileName;
+
+            fetch(`/delete-file/${serverName}/${encodeURIComponent(fullPath)}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('تم حذف الملف بنجاح', 'success');
+                    setTimeout(() => {
+                        window.location.href = `/edit-server/${serverName}${filePath ? '?path=' + encodeURIComponent(filePath) : ''}`;
+                    }, 1000);
+                } else {
+                    showToast(`فشل في حذف الملف: ${data.error}`, 'error');
+                }
+            })
+            .catch(error => {
+                showToast(`خطأ: ${error.message}`, 'error');
+            });
+        }
+
+        // إعادة تسمية الملف - فتح النافذة
+        function openRenameModal() {
+            document.getElementById('renameModal').classList.add('active');
+            document.getElementById('newFileName').focus();
+        }
+
+        // إغلاق نافذة إعادة التسمية
+        function closeRenameModal() {
+            document.getElementById('renameModal').classList.remove('active');
+        }
+
+        // إعادة تسمية الملف
+        function renameFile() {
+            const oldFileName = '<%= fileName %>';
+            const newFileName = document.getElementById('newFileName').value.trim();
+            const filePath = '<%= filePath %>';
+            const serverName = '<%= serverName %>';
+
+            if (!newFileName) {
+                showToast('يرجى إدخال اسم صالح للملف', 'warning');
+                return;
+            }
+
+            if (oldFileName === newFileName) {
+                closeRenameModal();
+                return;
+            }
+
+            fetch(`/api/rename-file/${serverName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    oldPath: filePath ? `${filePath}/${oldFileName}` : oldFileName,
+                    newPath: filePath ? `${filePath}/${newFileName}` : newFileName
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('تم إعادة تسمية الملف بنجاح', 'success');
+                    setTimeout(() => {
+                        window.location.href = `/view-file/${serverName}/${encodeURIComponent(newFileName)}${filePath ? '?path=' + encodeURIComponent(filePath) : ''}`;
+                    }, 1000);
+                } else {
+                    showToast(`فشل في إعادة تسمية الملف: ${data.error}`, 'error');
+                }
+                closeRenameModal();
+            })
+            .catch(error => {
+                showToast(`خطأ: ${error.message}`, 'error');
+                closeRenameModal();
+            });
+        }
+
+        // إغلاق نافذة إعادة التسمية عند النقر خارجها
+        document.getElementById('renameModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRenameModal();
+            }
+        });
+
+        // الاستماع للأحداث
+        document.addEventListener('keydown', function(e) {
+            // حفظ بالضغط على Ctrl+S
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (<%= userPermissions.canEdit %> && '<%= fileType %>' === 'text') {
+                    saveFile();
+                }
+            }
+
+            // إغلاق نافذة إعادة التسمية عند الضغط على Escape
+            if (e.key === 'Escape') {
+                closeRenameModal();
+            }
+        });
+
+        // Add syntax highlighting function
+        function highlightSyntax(text) {
+            return text
+                .replace(/\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|class|extends|new|try|catch|throw|finally|async|await|import|export|default)\b/g, '<span class="code-keyword">$1</span>')
+                .replace(/(["'`].*?["'`])/g, '<span class="code-string">$1</span>')
+                .replace(/\/\/.*/g, '<span class="code-comment">$1</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span class="code-comment">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="code-number">$1</span>')
+                .replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\(/g, '<span class="code-function">$1</span>(')
+                .replace(/([+\-*/%=!<>])/g, '<span class="code-operator">$1</span>');
+        }
+
+        // Apply syntax highlighting on load and input
+        const editor = document.getElementById('fileContent');
+        if (editor) {
+            editor.value = highlightSyntax(editor.value);
+            editor.addEventListener('input', function() {
+                const text = this.value;
+                document.getElementById('editorStatus').style.color = 'var(--warning-color)';
+                document.getElementById('statusText').innerText = 'لم يتم الحفظ';
+            });
+        }
+    </script>
+</body>
+</html>
